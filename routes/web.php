@@ -20,9 +20,7 @@ Route::get('/latest-news', function () {
     return Inertia::render('LatestNews');
 });
 
-Route::get('/article/{id}', function ($id) {
-    return Inertia::render('Article', ['id' => $id]);
-});
+Route::get('/article/{slug}', [App\Http\Controllers\ArticleController::class, 'show'])->name('article.show');
 
 Route::get('/tag/{slug}', function ($slug) {
     return Inertia::render('Tag', ['slug' => $slug]);
@@ -49,8 +47,8 @@ Route::get('/login', [App\Http\Controllers\Auth\AuthenticatedSessionController::
 Route::post('/login', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'store']);
 Route::post('/logout', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-// Admin Routes (Currently no middleware for preview, add 'auth' in production)
-Route::prefix('admin')->group(function () {
+// Admin Routes - Protected by authentication
+Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Admin/Dashboard');
     })->name('admin.dashboard');
@@ -63,6 +61,15 @@ Route::prefix('admin')->group(function () {
         return Inertia::render('Admin/Pages/Create');
     })->name('admin.pages.create');
 
+    // Posts Management - Using Controller
+    Route::get('/posts', [App\Http\Controllers\Admin\PostController::class, 'index'])->name('admin.posts.index');
+    Route::get('/posts/create', [App\Http\Controllers\Admin\PostController::class, 'create'])->name('admin.posts.create');
+    Route::post('/posts', [App\Http\Controllers\Admin\PostController::class, 'store'])->name('admin.posts.store');
+    Route::get('/posts/{post}/edit', [App\Http\Controllers\Admin\PostController::class, 'edit'])->name('admin.posts.edit');
+    Route::put('/posts/{post}', [App\Http\Controllers\Admin\PostController::class, 'update'])->name('admin.posts.update');
+    Route::post('/posts/{post}', [App\Http\Controllers\Admin\PostController::class, 'update']); // For file upload with method spoofing
+    Route::delete('/posts/{post}', [App\Http\Controllers\Admin\PostController::class, 'destroy'])->name('admin.posts.destroy');
+
     Route::get('/profile', function () {
         return Inertia::render('Admin/Profile');
     })->name('admin.profile');
@@ -71,4 +78,5 @@ Route::prefix('admin')->group(function () {
         return Inertia::render('Admin/Settings');
     })->name('admin.settings');
 });
+
 

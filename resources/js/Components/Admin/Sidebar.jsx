@@ -14,6 +14,7 @@ export default function Sidebar() {
 
     const navigation = [
         { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+        { name: 'Manage Posts', href: '/admin/posts', icon: FileText },
         { name: 'Manage Pages', href: '/admin/pages', icon: FileText },
         { name: 'Profile', href: '/admin/profile', icon: User },
         { name: 'Settings', href: '/admin/settings', icon: Settings },
@@ -36,8 +37,8 @@ export default function Sidebar() {
                             key={item.name}
                             href={item.href}
                             className={`flex items-center justify-between px-4 py-3 rounded-lg transition-colors group ${active
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                ? 'bg-primary text-primary-foreground'
+                                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                 }`}
                         >
                             <div className="flex items-center gap-3">
