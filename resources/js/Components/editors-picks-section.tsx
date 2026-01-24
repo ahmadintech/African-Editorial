@@ -3,61 +3,51 @@
 import { NewsCard } from "./news-card"
 import { MobileCarousel } from "./mobile-carousel"
 
-const editorsPicks = [
- {
- id: 6,
- title: "Behind the Scenes: How African Journalists Cover Breaking News",
- summary: "An intimate look at the challenges and triumphs of investigative reporting on the continent",
- category: "Features",
- author: "Isabel Munhuirire",
- date: "2024-01-03",
- image: "/african-journalist-newsroom.jpg",
- readTime: "11 min",
- },
- {
- id: 7,
- title: "Cultural Renaissance: Art and Music Shape African Identity",
- summary: "Emerging artists are redefining what it means to create contemporary African culture",
- category: "Culture",
- author: "Thierry Ngandu",
- date: "2024-01-02",
- image: "/african-art-culture-music.jpg",
- readTime: "9 min",
- },
- {
- id: 8,
- title: "Infrastructure Development: Building the Future Africa",
- summary: "Major projects across the continent aim to transform connectivity and commerce",
- category: "Development",
- author: "Adeyemi Olakunle",
- date: "2024-01-01",
- image: "/african-infrastructure-construction.jpg",
- readTime: "10 min",
- },
-]
+export function EditorsPicksSection({ stories = [] }: { stories?: any[] }) {
+    if (!stories || stories.length === 0) return null
 
-export function EditorsPicksSection() {
- return (
- <section className="py-12 border-t border-border">
- <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-8">Editor's Picks</h2>
+    return (
+        <section className="py-12 border-t border-border">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-8">Editor's Picks</h2>
 
- <div className="hidden md:block">
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
- {editorsPicks.map((story) => (
- <NewsCard key={story.id} {...story} />
- ))}
- </div>
- </div>
+            <div className="hidden md:block">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {stories.map((story) => (
+                        <NewsCard
+                            key={story.id}
+                            id={story.id}
+                            title={story.title}
+                            summary={story.excerpt}
+                            category={story.category?.name || 'Features'}
+                            author={story.author?.name}
+                            date={new Date(story.published_at).toLocaleDateString()}
+                            image={story.featured_image_url}
+                            readTime={story.read_time || '10 min'}
+                            slug={story.slug}
+                        />
+                    ))}
+                </div>
+            </div>
 
- <div className="md:hidden">
- <MobileCarousel>
- {editorsPicks.map((story) => (
- <div key={story.id} className="carousel-card">
- <NewsCard {...story} />
- </div>
- ))}
- </MobileCarousel>
- </div>
- </section>
- )
+            <div className="md:hidden">
+                <MobileCarousel>
+                    {stories.map((story) => (
+                        <div key={story.id} className="carousel-card">
+                            <NewsCard
+                                id={story.id}
+                                title={story.title}
+                                summary={story.excerpt}
+                                category={story.category?.name || 'Features'}
+                                author={story.author?.name}
+                                date={new Date(story.published_at).toLocaleDateString()}
+                                image={story.featured_image_url}
+                                readTime={story.read_time || '10 min'}
+                                slug={story.slug}
+                            />
+                        </div>
+                    ))}
+                </MobileCarousel>
+            </div>
+        </section>
+    )
 }

@@ -2,6 +2,7 @@
 
 
 import { Clock, User, Bookmark, Calendar } from "lucide-react"
+import { Link } from "@inertiajs/react"
 import { useState } from "react"
 import { SocialShareButtons } from "./social-share-buttons"
 
@@ -15,11 +16,14 @@ interface ArticleDetailProps {
     date: string
     readTime: string
     category: string
+    category: string
     image: string
+    tags?: Array<{ name: string; slug: string }>
     relatedArticles: Array<{
         id: number
         title: string
         image: string
+        slug?: string
     }>
 }
 
@@ -34,15 +38,16 @@ export function ArticleDetail({
     readTime,
     category,
     image,
+    tags,
     relatedArticles,
 }: ArticleDetailProps) {
     const [bookmarked, setBookmarked] = useState(false)
 
     return (
         <article className="bg-background">
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
                 {/* Header */}
-                <div className="mb-8">
+                <div className="mb-6">
                     <div className="inline-block mb-4">
                         <span className="news-badge">{category}</span>
                     </div>
@@ -50,40 +55,40 @@ export function ArticleDetail({
                     <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight mb-6 text-foreground">
                         {title}
                     </h1>
-
-                    {/* Metadata */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 text-sm text-muted-foreground border-b border-border pb-6">
-                        <div className="flex items-center gap-2">
-                            <User className="w-4 h-4" />
-                            <span className="font-medium text-foreground">{author}</span>
-                        </div>
-                        <span className="hidden sm:block text-muted-foreground/50">•</span>
-                        <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>{date}</span>
-                        </div>
-                        <span className="hidden sm:block text-muted-foreground/50">•</span>
-                        <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            <span>{readTime} read</span>
-                        </div>
-                        <button
-                            onClick={() => setBookmarked(!bookmarked)}
-                            className={`ml-auto sm:ml-0 p-2 rounded-full transition-colors ${bookmarked ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
-                            title="Bookmark"
-                        >
-                            <Bookmark className={`w-5 h-5 ${bookmarked ? "fill-current" : ""}`} />
-                        </button>
-                    </div>
                 </div>
 
-                {/* Hero image - Now aligned with text */}
-                <div className="relative aspect-video w-full rounded-xl overflow-hidden mb-10 shadow-sm border border-border/50">
+                {/* Hero image */}
+                <div className="relative aspect-video w-full rounded-xl overflow-hidden mb-6 shadow-sm border border-border/50">
                     <img
                         src={image || "/placeholder.svg"}
                         alt={title}
                         className="w-full h-full absolute inset-0 object-cover"
                     />
+                </div>
+
+                {/* Metadata - Now below image */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 text-sm text-muted-foreground border-b border-border pb-6 mb-10">
+                    <div className="flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        <span className="font-medium text-foreground">{author}</span>
+                    </div>
+                    <span className="hidden sm:block text-muted-foreground/50">•</span>
+                    <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        <span>{date}</span>
+                    </div>
+                    <span className="hidden sm:block text-muted-foreground/50">•</span>
+                    <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        <span>{readTime} read</span>
+                    </div>
+                    <button
+                        onClick={() => setBookmarked(!bookmarked)}
+                        className={`ml-auto sm:ml-0 p-2 rounded-full transition-colors ${bookmarked ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+                        title="Bookmark"
+                    >
+                        <Bookmark className={`w-5 h-5 ${bookmarked ? "fill-current" : ""}`} />
+                    </button>
                 </div>
 
                 {/* Article body */}
@@ -113,19 +118,21 @@ export function ArticleDetail({
                 </div>
 
                 {/* Tags */}
-                <div className="mb-12">
-                    <div className="flex flex-wrap gap-2">
-                        {["Politics", "Africa", "Investigation", "Policy"].map((tag) => (
-                            <a
-                                key={tag}
-                                href={`/tag/${tag.toLowerCase()}`}
-                                className="px-4 py-1.5 rounded-full text-xs font-bold bg-muted hover:bg-primary hover:text-primary-foreground transition-all uppercase tracking-wide"
-                            >
-                                {tag}
-                            </a>
-                        ))}
+                {tags && tags.length > 0 && (
+                    <div className="mb-12">
+                        <div className="flex flex-wrap gap-2">
+                            {tags.map((tag) => (
+                                <Link
+                                    key={tag.slug}
+                                    href={`/tag/${tag.slug}`}
+                                    className="px-4 py-1.5 rounded-full text-xs font-bold bg-muted hover:bg-primary hover:text-primary-foreground transition-all uppercase tracking-wide"
+                                >
+                                    {tag.name}
+                                </Link>
+                            ))}
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Related articles */}
                 {relatedArticles.length > 0 && (
@@ -133,7 +140,7 @@ export function ArticleDetail({
                         <h3 className="text-2xl font-bold text-foreground mb-8 text-center sm:text-left">Related Stories</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {relatedArticles.map((article) => (
-                                <a key={article.id} href={`/article/${article.id}`} className="group flex flex-col gap-3">
+                                <Link key={article.id} href={`/article/${article.slug || article.id}`} className="group flex flex-col gap-3">
                                     <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-muted border border-border/50">
                                         <img
                                             src={article.image || "/placeholder.svg"}
@@ -146,7 +153,7 @@ export function ArticleDetail({
                                             {article.title}
                                         </h4>
                                     </div>
-                                </a>
+                                </Link>
                             ))}
                         </div>
                     </div>

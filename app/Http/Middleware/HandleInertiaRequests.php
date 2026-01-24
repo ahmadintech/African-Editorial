@@ -44,6 +44,18 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            'settings' => \Illuminate\Support\Facades\Cache::remember('site_settings', 3600, function () {
+                return \App\Models\Setting::all()->mapWithKeys(function ($item) {
+                    $value = $item->value;
+                    if ($item->type === 'boolean') {
+                        $value = (bool) $value;
+                    } elseif ($item->type === 'json') {
+                        $value = json_decode($value, true) ?? [];
+                    }
+                    return [$item->key => $value];
+                })->toArray();
+            }),
+            'app_url' => config('app.url'),
         ];
     }
 }

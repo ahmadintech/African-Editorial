@@ -6,7 +6,8 @@ import {
     Settings,
     LogOut,
     ChevronRight,
-    Search
+    Search,
+    Tag
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -15,6 +16,7 @@ export default function Sidebar() {
     const navigation = [
         { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
         { name: 'Manage Posts', href: '/admin/posts', icon: FileText },
+        { name: 'Categories', href: '/admin/categories', icon: Tag },
         { name: 'Manage Pages', href: '/admin/pages', icon: FileText },
         { name: 'Profile', href: '/admin/profile', icon: User },
         { name: 'Settings', href: '/admin/settings', icon: Settings },

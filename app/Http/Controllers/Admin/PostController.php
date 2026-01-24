@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Media;
 use App\Models\Post;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -45,9 +46,11 @@ class PostController extends Controller
     public function create(): Response
     {
         $categories = Category::orderBy('name')->get();
+        $tags = Tag::orderBy('name')->get(['name']);
 
         return Inertia::render('Admin/Posts/Create', [
             'categories' => $categories,
+            'tags' => $tags,
         ]);
     }
 
@@ -65,6 +68,8 @@ class PostController extends Controller
             'read_time' => 'nullable|string|max:50',
             'source' => 'nullable|string|max:255',
             'featured_image' => 'nullable|image|max:5120', // Max 5MB
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:255',
         ]);
 
         $validated['user_id'] = auth()->id();
@@ -99,8 +104,20 @@ class PostController extends Controller
         }
         
         unset($validated['featured_image']);
+        $tags = $validated['tags'] ?? [];
+        unset($validated['tags']);
 
         $post = Post::create($validated);
+        
+        // Sync tags
+        if (!empty($tags)) {
+            $tagIds = [];
+            foreach ($tags as $tagName) {
+                $tag = Tag::firstOrCreate(['name' => $tagName]);
+                $tagIds[] = $tag->id;
+            }
+            $post->tags()->sync($tagIds);
+        }
 
         return redirect()
             ->route('admin.posts.edit', $post)
@@ -114,10 +131,12 @@ class PostController extends Controller
     {
         $post->load(['category', 'tags', 'featuredImage', 'author']);
         $categories = Category::orderBy('name')->get();
+        $tags = Tag::orderBy('name')->get(['name']);
 
         return Inertia::render('Admin/Posts/Edit', [
             'post' => $post,
             'categories' => $categories,
+            'tags' => $tags,
         ]);
     }
 
@@ -135,6 +154,8 @@ class PostController extends Controller
             'read_time' => 'nullable|string|max:50',
             'source' => 'nullable|string|max:255',
             'featured_image' => 'nullable|image|max:5120', // Max 5MB
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:255',
         ]);
 
         // Update slug if title changed
@@ -171,8 +192,20 @@ class PostController extends Controller
         }
         
         unset($validated['featured_image']);
+        $tags = $validated['tags'] ?? [];
+        unset($validated['tags']);
 
         $post->update($validated);
+        
+        // Sync tags
+        $tagIds = [];
+        if (!empty($tags)) {
+            foreach ($tags as $tagName) {
+                $tag = Tag::firstOrCreate(['name' => $tagName]);
+                $tagIds[] = $tag->id;
+            }
+        }
+        $post->tags()->sync($tagIds);
 
         return redirect()
             ->route('admin.posts.edit', $post)

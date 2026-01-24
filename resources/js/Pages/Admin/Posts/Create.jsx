@@ -1,10 +1,11 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { useForm, Link, usePage } from '@inertiajs/react';
-import { Plus, Save, X, ArrowLeft, Eye, Clock, Hash, Globe, ChevronDown, FileText, Layout, Image as ImageIcon, Upload, Trash2 } from 'lucide-react';
+import { Plus, Save, X, ArrowLeft, Eye, Clock, Hash, Globe, ChevronDown, FileText, Layout, Image as ImageIcon, Upload, Trash2, Tag } from 'lucide-react';
 import Editor from '@/Components/Admin/Editor';
+import TagInput from '@/Components/Admin/TagInput';
 import { useState, useRef } from 'react';
 
-export default function Create({ categories }) {
+export default function Create({ categories, tags }) {
     const { auth, flash } = usePage().props;
     const fileInputRef = useRef(null);
     const [imagePreview, setImagePreview] = useState(null);
@@ -14,6 +15,7 @@ export default function Create({ categories }) {
         excerpt: '',
         content: '',
         category_id: categories?.[0]?.id || '',
+        tags: [],
         status: 'draft',
         read_time: '5 min',
         source: '',
@@ -299,6 +301,20 @@ export default function Create({ categories }) {
                                     ))}
                                 </select>
                                 {errors.category_id && <p className="text-destructive text-xs mt-1">{errors.category_id}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                    <Tag className="w-3 h-3" />
+                                    Tags / Topics
+                                </label>
+                                <TagInput
+                                    value={data.tags}
+                                    onChange={tags => setData('tags', tags)}
+                                    suggestions={tags}
+                                    placeholder="Add tags (e.g. Politics, Economy)..."
+                                />
+                                {errors.tags && <p className="text-destructive text-xs mt-1">{errors.tags}</p>}
                             </div>
                         </div>
                     </div>

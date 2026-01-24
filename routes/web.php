@@ -4,9 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Home');
-});
+Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::get('/about', function () {
     return Inertia::render('About');
@@ -16,15 +14,16 @@ Route::get('/contact', function () {
     return Inertia::render('Contact');
 });
 
-Route::get('/latest-news', function () {
-    return Inertia::render('LatestNews');
-});
+Route::get('/latest-news', [App\Http\Controllers\LatestNewsController::class, 'index'])->name('latest-news');
 
 Route::get('/article/{slug}', [App\Http\Controllers\ArticleController::class, 'show'])->name('article.show');
 
 Route::get('/tag/{slug}', function ($slug) {
     return Inertia::render('Tag', ['slug' => $slug]);
 });
+
+Route::get('/category/{slug}', [App\Http\Controllers\CategoryController::class, 'show'])->name('category.show');
+Route::get('/search', [App\Http\Controllers\SearchController::class, 'index'])->name('search');
 
 Route::get('/careers', function () {
     return Inertia::render('About'); // Placeholder
@@ -49,9 +48,7 @@ Route::post('/logout', [App\Http\Controllers\Auth\AuthenticatedSessionController
 
 // Admin Routes - Protected by authentication
 Route::prefix('admin')->middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Admin/Dashboard');
-    })->name('admin.dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
 
     Route::get('/pages', function () {
         return Inertia::render('Admin/Pages/Index');
@@ -74,9 +71,19 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         return Inertia::render('Admin/Profile');
     })->name('admin.profile');
 
-    Route::get('/settings', function () {
-        return Inertia::render('Admin/Settings');
-    })->name('admin.settings');
+    Route::get('/settings', [App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('admin.settings');
+    Route::post('/settings', [App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('admin.settings.update');
+
+    // Categories Management
+    Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class)->names([
+        'index' => 'admin.categories.index',
+        'create' => 'admin.categories.create',
+        'store' => 'admin.categories.store',
+        'show' => 'admin.categories.show',
+        'edit' => 'admin.categories.edit',
+        'update' => 'admin.categories.update',
+        'destroy' => 'admin.categories.destroy',
+    ]);
 });
 
 

@@ -1,5 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import {
     Globe,
@@ -21,42 +21,45 @@ import {
     Plus
 } from 'lucide-react';
 
-export default function Settings() {
+export default function Settings({ settings }) {
+    const { flash } = usePage().props;
     const [activeTab, setActiveTab] = useState('General');
 
     const { data, setData, post, processing, errors } = useForm({
         // General
-        site_name: 'African Editorial',
-        site_description: 'Premier destination for high-quality investigative reporting and analytical news across the African continent.',
-        contact_email: 'contact@african-editorial.com',
-        copyright_text: '© 2026 African Editorial. All rights reserved.',
-        maintenance_mode: false,
+        site_name: settings?.site_name || 'African Editorial',
+        site_description: settings?.site_description || 'Premier destination for high-quality investigative reporting and analytical news across the African continent.',
+        contact_email: settings?.contact_email || 'contact@african-editorial.com',
+        copyright_text: settings?.copyright_text || '© 2026 African Editorial. All rights reserved.',
+        maintenance_mode: settings?.maintenance_mode || false,
 
         // Appearance
-        logo_url: '/logo.png',
+        logo_url: settings?.logo_url || '/logo.png',
 
         // Social Links
-        facebook_url: 'https://facebook.com/africaneditorial',
-        twitter_url: 'https://twitter.com/africaneditorial',
-        linkedin_url: 'https://linkedin.com/company/africaneditorial',
-        youtube_url: 'https://youtube.com/africaneditorial',
-        instagram_url: 'https://instagram.com/africaneditorial',
+        facebook_url: settings?.facebook_url || 'https://facebook.com/africaneditorial',
+        twitter_url: settings?.twitter_url || 'https://twitter.com/africaneditorial',
+        linkedin_url: settings?.linkedin_url || 'https://linkedin.com/company/africaneditorial',
+        youtube_url: settings?.youtube_url || 'https://youtube.com/africaneditorial',
+        instagram_url: settings?.instagram_url || 'https://instagram.com/africaneditorial',
 
         // Contact Details
-        contact_address: 'Kampala, Uganda, East Africa',
-        contact_phone: '+256 (414) 252-600',
-        contact_map_url: '',
-        department_emails: [
+        contact_address: settings?.contact_address || 'Kampala, Uganda, East Africa',
+        contact_phone: settings?.contact_phone || '+256 (414) 252-600',
+        contact_map_url: settings?.contact_map_url || '',
+        department_emails: settings?.department_emails || [
             { id: 1, name: 'Editorial', email: 'editorial@africaneditorial.com' },
             { id: 2, name: 'Investigations', email: 'investigations@africaneditorial.com' },
-            { id: 3, name: 'Tips & Story Ideas', email: 'tips@africaneditorial.com' },
+            { id: 3, name: 'Tips & Story Ideas', 'email': 'tips@africaneditorial.com' },
         ]
     });
 
     const submit = (e) => {
         e.preventDefault();
-        // post(route('admin.settings.update'));
-        alert('Draft Mode: Settings would be saved.');
+        post(route('admin.settings.update'), {
+            preserveScroll: true,
+            forceFormData: true,
+        });
     };
 
     const updateDeptEmail = (id, field, value) => {
@@ -82,6 +85,11 @@ export default function Settings() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Navigation */}
                 <div className="lg:col-span-1">
+                    {flash?.success && (
+                        <div className="mb-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-600 font-medium text-sm">
+                            {flash.success}
+                        </div>
+                    )}
                     <div className="bg-card rounded-xl border border-border p-2 sticky top-28">
                         {[
                             { name: 'General', icon: SettingsIcon },
@@ -172,20 +180,39 @@ export default function Settings() {
                                     <label className="block font-bold text-xs text-muted-foreground uppercase tracking-wider mb-4">Website Logo</label>
                                     <div className="flex items-start gap-8">
                                         <div className="w-48 h-24 bg-muted/50 rounded-xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden group relative">
-                                            {data.logo_url ? (
-                                                <img src={data.logo_url} alt="Logo" className="max-h-16 object-contain" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
+                                            {data.logo_url && (typeof data.logo_url === 'string' || data.logo_url instanceof File) ? (
+                                                <img
+                                                    src={data.logo_url instanceof File ? URL.createObjectURL(data.logo_url) : data.logo_url}
+                                                    alt="Logo"
+                                                    className="max-h-16 object-contain"
+                                                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
+                                                />
                                             ) : null}
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer" onClick={() => document.getElementById('logo-upload').click()}>
                                                 <ImageIcon className="text-white w-6 h-6" />
                                             </div>
-                                            <div className="hidden flex-col items-center gap-2 text-muted-foreground">
+                                            <div className={`hidden flex-col items-center gap-2 text-muted-foreground ${!data.logo_url ? '!flex' : ''}`}>
                                                 <ImageIcon className="w-8 h-8 opacity-20" />
                                                 <span className="text-[10px] font-bold uppercase tracking-widest">No Logo</span>
                                             </div>
                                         </div>
                                         <div className="flex-1 space-y-4">
                                             <p className="text-xs text-muted-foreground italic">Preferred format: .svg or transparent .png. Recommended height: 80px.</p>
-                                            <button type="button" className="px-4 py-2 bg-muted hover:bg-muted-foreground/10 rounded-lg text-xs font-bold transition-all border border-border">
+                                            <input
+                                                id="logo-upload"
+                                                type="file"
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={(e) => {
+                                                    const file = e.target.files[0];
+                                                    if (file) setData('logo_url', file);
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => document.getElementById('logo-upload').click()}
+                                                className="px-4 py-2 bg-muted hover:bg-muted-foreground/10 rounded-lg text-xs font-bold transition-all border border-border"
+                                            >
                                                 Upload New Logo
                                             </button>
                                         </div>
